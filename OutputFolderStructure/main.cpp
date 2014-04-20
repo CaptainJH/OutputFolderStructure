@@ -16,9 +16,11 @@
 std::vector<std::string> FolderStack;
 std::map<std::string, size_t> FolderEntryLeft;
 
-void DrawOutputTextLine(const std::string& fullPath, const size_t depth)
+void DrawOutputTextLine(const std::string& fullPath)
 {
     boost::filesystem::path dir(fullPath);
+    
+    const auto depth = FolderStack.size();
     
     for (auto i = 0; i < depth; ++i)
     {
@@ -44,7 +46,7 @@ size_t GetFolderSubEntryCount(const std::string& folderFullPath)
                          [](const path&)->bool{return true;});
 }
 
-std::string CollectFiles(const std::string& path)
+std::string OutputFolderStructure(const std::string& path)
 {
     std::string ret;
     
@@ -55,7 +57,7 @@ std::string CollectFiles(const std::string& path)
     {
         if (boost::filesystem::is_directory(it_dir->path()))
         {
-            DrawOutputTextLine(it_dir->path().string(), FolderStack.size());
+            DrawOutputTextLine(it_dir->path().string());
             
             if(FolderEntryLeft.find(it_dir->path().string()) == FolderEntryLeft.end())
             {
@@ -64,13 +66,13 @@ std::string CollectFiles(const std::string& path)
             }
             
             FolderStack.push_back(it_dir->path().string());
-            CollectFiles(it_dir->path().string());
+            OutputFolderStructure(it_dir->path().string());
             FolderStack.pop_back();
             
         }
         else
         {
-            DrawOutputTextLine(it_dir->path().string(), FolderStack.size());
+            DrawOutputTextLine(it_dir->path().string());
         }
     }
     
@@ -85,7 +87,7 @@ int main(int argc, const char * argv[])
     
     FolderEntryLeft[cwd] = GetFolderSubEntryCount(cwd);
     FolderStack.push_back(cwd);
-    std::cout << CollectFiles(cwd) << std::endl;
+    std::cout << OutputFolderStructure(cwd) << std::endl;
     
     return 0;
 }
